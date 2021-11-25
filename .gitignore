@@ -7,3 +7,8 @@ results/*
 *unprocessed*
 getresults/*
 datasets/*
+
+
+.idea/
+
+.ipynb_checkpoints/
