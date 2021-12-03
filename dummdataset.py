@@ -8,7 +8,9 @@ Created on Fri Mar 12 09:41:34 2021
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
 import os
+import openml
 np.random.seed(92)
 
 def ptp(X):
@@ -144,3 +146,66 @@ class Dataset(object):
         nclasses = np.vstack(instance_i)[:,2][:,None]
         # get task description of surr task
         return x,ninstance,nfeature,nclasses
+
+
+class Dataset_OpenML(Dataset):
+    """
+    Create an OpenML specific version of the dataset class.
+    """
+    def __init__(self, data_id):
+        # read dataset
+        self.X, self.y, self.name = self.__get_data(data_id)
+
+        # batch properties
+        self.ninstanc = 256
+        self.nclasses = 3
+        self.nfeature = 16
+
+    def __get_data(self, data_id):
+        # Retrieve dataset from OpenMl
+        dataset = openml.datasets.get_dataset(data_id)
+        X, y, categorical_indicator, attribute_names = dataset.get_data(
+            dataset_format="dataframe", target=dataset.default_target_attribute
+        )
+        X = self.preprocess_features(X, categorical_indicator)
+
+        # Transform labels into categorical encoding
+        labels = self.encode_labels(y)
+        return data, labels, dataset.name
+
+    def preprocess_features(self, X, categorical_indicator):
+        '''
+        Preprocess the feature table X by imputing categorical and numeric features with constant value and mean
+        respectively, by encoding the categorical features from 1..N_categories and by standardizing the features
+        to have mean=0 and std=1.
+
+        :param X: pandas DataFrame object contain feature table
+        :param categorical_indicator: list of booleans indicating whether columns are categorical
+        :return: numpy array with preprocessed features
+        '''
+        numeric_features = X.columns[~np.array(categorical_indicator)]
+        numeric_transformer = SimpleImputer(strategy="mean")
+
+        categorical_features = X.columns[categorical_indicator]
+        categorical_transformer = Pipeline(
+            steps=[("imputer", SimpleImputer(strategy="constant", fill_value="missing")),
+                   ("ordinal_encoder", OrdinalEncoder())]
+        )
+
+        type_specific_preprocessor = ColumnTransformer(
+            transformers=[
+                ("num", numeric_transformer, numeric_features),
+                ("cat", categorical_transformer, categorical_features),
+            ]
+        )
+
+        preprocessor = Pipeline(
+            steps=[("type_preprocessor", type_specific_preprocessor), ("scaler", StandardScaler())]
+        )
+
+        return preprocessor.fit_transform(X)
+
+    def encode_labels(self, y):
+        le = LabelEncoder()
+        return np.asarray(le.fit_transform(y))
+        

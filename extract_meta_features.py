@@ -23,7 +23,7 @@ parser.add_argument('--split', help='Select metafeature extraction model (one ca
 parser.add_argument('--file', help='Select dataset name', type=str)
 
 args    = parser.parse_args()
-args.file = "abalone"
+#args.file = "abalone"
 
 def Dataset2VecModel(configuration):
 
@@ -95,5 +95,4 @@ for q in range(10): # any number of samples
     datasetmf.append(model(batch.input).numpy())
 
 metafeatures = np.vstack(datasetmf).mean(axis=0)[None]
-
 pd.DataFrame(metafeatures,index=[args.file]).to_csv(os.path.join(save_dir,f"{args.file}.csv"))
