@@ -8,7 +8,12 @@ Created on Fri Mar 12 09:41:34 2021
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import StandardScaler
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 import os
 import openml
 np.random.seed(92)
@@ -167,7 +172,7 @@ class Dataset_OpenML(Dataset):
         X, y, categorical_indicator, attribute_names = dataset.get_data(
             dataset_format="dataframe", target=dataset.default_target_attribute
         )
-        X = self.preprocess_features(X, categorical_indicator)
+        data = self.preprocess_features(X, categorical_indicator)
 
         # Transform labels into categorical encoding
         labels = self.encode_labels(y)

@@ -67,8 +67,8 @@ class Model(object):
     def _create_dir(self,rootdir):
         import datetime
         # create directory
-        directory = os.path.join(rootdir, "checkpoints",f"searchspace-{self.searchspace}",f"split-{self.split}","dataset2vec",\
-                                 "vanilla",f"configuration-{self.config_num}",datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f'))
+        directory = os.path.join(rootdir, "checkpoints", f"searchspace-{self.searchspace}", f"split-{self.split}", "dataset2vec",\
+                                 "vanilla",f"configuration-{self.config_num}", datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f'))
         os.makedirs(directory)
         return directory
     

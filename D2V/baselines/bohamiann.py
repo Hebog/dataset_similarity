@@ -31,7 +31,7 @@ args = parser.parse_args()
 currentdir     = os.path.dirname(os.path.realpath(__file__))
 rootdir   = '/'.join(currentdir.split('/')[:-1])
 sys.path.insert(0,rootdir)
-from dataset import Dataset
+from D2V.dataset import Dataset
 
 def propose(optimal, algorithm,indices):
     optimal       = -1*optimal

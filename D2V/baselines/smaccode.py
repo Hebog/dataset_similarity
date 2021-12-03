@@ -31,7 +31,7 @@ args = parser.parse_args()
 currentdir     = os.path.dirname(os.path.realpath(__file__))
 rootdir     = '/'.join(currentdir.split('/')[:-1])
 sys.path.insert(0,rootdir)
-from dataset import Dataset
+from D2V.dataset import Dataset
 savedir     = os.path.join(rootdir,"results","smac",f"init-{args.k}",args.method,f"split-{args.split}" if args.method=="d2v" else "")
 outpdir     = os.path.join(rootdir,"outputs","smac",f"init-{args.k}",args.method,f"split-{args.split}" if args.method=="d2v" else "")
 os.makedirs(savedir,exist_ok=True)

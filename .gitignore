@@ -2,11 +2,11 @@
 
 # Specify filepatterns you want git to ignore.
 *.pyc
-checkpoints/*
+D2V/checkpoints/*
 results/*
 *unprocessed*
 getresults/*
-datasets/*
+D2V/datasets/*
 
 
 .idea/

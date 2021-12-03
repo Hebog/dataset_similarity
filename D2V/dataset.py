@@ -77,7 +77,7 @@ class Dataset(object):
         # create hyperparameter space
         self.orighyper    = None
         # read meta-splits
-        splits_file = os.path.join(rootdir, "metadataset",f"searchspace-{configuration['searchspace']}",f"searchspace-{configuration['searchspace']}-splits.csv")
+        splits_file = os.path.join(rootdir, "metadataset", f"searchspace-{configuration['searchspace']}", f"searchspace-{configuration['searchspace']}-splits.csv")
         metasplits  = pd.read_csv(splits_file,index_col=0)
         # iterate over splits of the meta-splits
         iterates = ['train','valid','test'] if use_valid else ['train','test']
@@ -283,7 +283,7 @@ class Dataset(object):
         # create configuration space placeholder
         cs = ConfigSpace.ConfigurationSpace()
         # read associated json file
-        space_file = os.path.join(self.rootdir, "metadataset",f"searchspace-{self.searchspace}",f"searchspace-{self.searchspace}-configurationspace.txt")
+        space_file = os.path.join(self.rootdir, "metadataset", f"searchspace-{self.searchspace}", f"searchspace-{self.searchspace}-configurationspace.txt")
         configuration = json.load(open(space_file,'r'))
         for config in configuration.keys():
             val = configuration[config]

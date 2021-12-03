@@ -31,8 +31,8 @@ parser.add_argument('--gamma', help='distance hyperparameter',type=float,default
 args    = parser.parse_args()
 
 rootdir     = os.path.dirname(os.path.realpath(__file__))
-config_file = os.path.join(rootdir, "configurations",f"configuration-{args.configuration}.json")
-info_file   = os.path.join(rootdir, "metadataset"  ,"info.json")
+config_file = os.path.join(rootdir, "configurations", f"configuration-{args.configuration}.json")
+info_file   = os.path.join(rootdir, "metadataset", "info.json")
 # load configuration
 configuration = json.load(open(config_file,'r'))
 # update with shared configurations with specifics

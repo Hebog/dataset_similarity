@@ -65,11 +65,11 @@ class Metadataset(object):
 
         '''
         if specs=='aaai':
-            meatfeatures = pd.read_csv(os.path.join(self.rootdir,"metafeatures","mf1.csv"),index_col=0,header=0)
+            meatfeatures = pd.read_csv(os.path.join(self.rootdir, "metafeatures", "mf1.csv"), index_col=0, header=0)
         elif specs=='tstr':
-            meatfeatures = pd.read_csv(os.path.join(self.rootdir,"metafeatures","mf2.csv"),index_col=0,header=0)
+            meatfeatures = pd.read_csv(os.path.join(self.rootdir, "metafeatures", "mf2.csv"), index_col=0, header=0)
         elif specs=='d2v':
-            meatfeatures = pd.read_csv(os.path.join(self.rootdir,f"metafeatures",f"meta-features-split-{self.split}.csv"),index_col=0,header=0)
+            meatfeatures = pd.read_csv(os.path.join(self.rootdir, f"metafeatures", f"meta-features-split-{self.split}.csv"), index_col=0, header=0)
         metafeatures = meatfeatures.loc[self.file]
         return np.asarray(metafeatures).reshape(-1,)
     
@@ -79,7 +79,7 @@ class Metadataset(object):
 
         '''
         # read metadaaset file
-        metadata = pd.read_csv(os.path.join(self.rootdir, "metadataset", f"searchspace-{self.searchspace}",f"{self.file}.txt"),index_col=None,header=None)
+        metadata = pd.read_csv(os.path.join(self.rootdir, "metadataset", f"searchspace-{self.searchspace}", f"{self.file}.txt"), index_col=None, header=None)
         return metadata
     
     def _get_data(self):

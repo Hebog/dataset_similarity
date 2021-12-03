@@ -66,5 +66,6 @@ for nonlinearity_d2v in ['relu']:
                                                         for architecture_h in ['SQU']:
                                                             configuration['architecture_h'] = architecture_h
                                                             configuration['number'] = counter
-                                                            json.dump(configuration,open(os.path.join(rootdir,"configurations",f"configuration-{counter}.json"),'w'))
+                                                            json.dump(configuration, open(os.path.join(rootdir,
+                                                                                                       "configurations", f"configuration-{counter}.json"), 'w'))
                                                             counter+=1

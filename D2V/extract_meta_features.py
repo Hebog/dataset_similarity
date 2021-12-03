@@ -71,8 +71,8 @@ def Dataset2VecModel(configuration):
 
 
 rootdir       = os.path.dirname(os.path.realpath(__file__))
-log_dir       = os.path.join(rootdir,"checkpoints",f"split-{args.split}")
-save_dir      = os.path.join(rootdir,"extracted")
+log_dir       = os.path.join(rootdir, "checkpoints", f"split-{args.split}")
+save_dir      = os.path.join(rootdir, "extracted")
 configuration = json.load(open(os.path.join(log_dir,"configuration.txt"),"r"))
 os.makedirs(save_dir,exist_ok=True)
 
