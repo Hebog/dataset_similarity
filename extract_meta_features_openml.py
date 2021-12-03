@@ -66,4 +66,6 @@ for openml_dataset in suite.data:
 
 print("Successfully finished all datasets, took: " + str(np.round(time2 - time0, 2)) + " seconds")
 
+# Successfully finished all datasets, took: 711.93 seconds
+
 
