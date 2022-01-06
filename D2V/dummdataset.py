@@ -6,11 +6,13 @@ Created on Fri Mar 12 09:41:34 2021
 @author: hsjomaa
 """
 import pandas as pd
+from pandas.api.types import is_numeric_dtype
 import numpy as np
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.preprocessing import OrdinalEncoder
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -159,7 +161,7 @@ class Dataset_OpenML(Dataset):
     """
     def __init__(self, data_id):
         # read dataset
-        self.X, self.y, self.name = self.__get_data(data_id)
+        self.X, self.y, self.name, self.num_target = self.__get_data(data_id)
 
         # batch properties
         self.ninstanc = 256
@@ -174,8 +176,16 @@ class Dataset_OpenML(Dataset):
         )
         data = self.preprocess_features(X, categorical_indicator)
 
-        # Transform labels into categorical encoding
-        labels = self.encode_labels(y)
+        numerical_target = is_numeric_dtype(y)
+
+        if numerical_target:
+            # Scale labels to range from [0,1]
+            labels = self.scale_labels(y)
+
+        else:
+            # Transform labels into categorical encoding
+            labels = self.encode_labels(y)
+
         return data, labels, dataset.name
 
     def preprocess_features(self, X, categorical_indicator):
@@ -210,7 +220,94 @@ class Dataset_OpenML(Dataset):
 
         return preprocessor.fit_transform(X)
 
+
+    def scale_labels(self, y):
+        min_max_scaler = MinMaxScaler()
+        return min_max_scaler.fit_transform(y)
+
+
     def encode_labels(self, y):
         le = LabelEncoder()
         return np.asarray(le.fit_transform(y))
+
+
+    def sample_batch(self, data, labels, ninstanc, nclasses, nfeature):
+        '''
+        Sample a batch from the dataset of size (ninstanc,nfeature)
+        and a corresponding label of shape (ninstanc,nclasses).
+
+        Parameters
+        ----------
+        data : numpy.array
+            dataset; shape (N,F) with N >= nisntanc and F >= nfeature
+        labels : numpy.array
+            categorical labels; shape (N,) with N >= nisntanc
+        ninstanc : int
+            Number of instances in the output batch.
+        nclasses : int
+            Number of classes in the output label.
+        nfeature : int
+            Number of features in the output batch.
+
+        Returns
+        -------
+        data : numpy.array
+            subset of the original dataset.
+        labels : numpy.array
+            one-hot encoded label representation of the classes in the subset
+
+        '''
+        # Create the one-hot encoder
+        ohc = OneHotEncoder(categories=[range(len(np.unique(labels)))], sparse=False)
+        d = {ni: indi for indi, ni in enumerate(np.unique(labels))}
+        # process the labels
+        labels = np.asarray([d[ni] for ni in labels.reshape(-1)]).reshape(-1)
+        # transform the labels to one-hot encoding
+        labels = ohc.fit_transform(labels.reshape(-1, 1))
+        # ninstance should be less than or equal to the dataset size
+        ninstanc = np.random.choice(np.arange(0, data.shape[0]), size=np.minimum(ninstanc, data.shape[0]),
+                                    replace=False)
+        # nfeature should be less than or equal to the dataset size
+        nfeature = np.random.choice(np.arange(0, data.shape[1]), size=np.minimum(nfeature, data.shape[1]),
+                                    replace=False)
+        # nclasses should be less than or equal to the total number of labels
+        nclasses = np.random.choice(np.arange(0, labels.shape[1]), size=np.minimum(nclasses, labels.shape[1]),
+                                    replace=False)
+        # extract data at selected instances
+        data = data[ninstanc]
+        # extract labels at selected instances
+        labels = labels[ninstanc]
+        # extract selected features from the data
+        data = data[:, nfeature]
+        # extract selected labels from the data
+        labels = labels[:, nclasses]
+        print("shape data: " + str(data.shape))
+        print("shape labels: " + str(labels.shape))
+        return data, labels
+
+    def instances(self, ninstanc=None, nclasses=None, nfeature=None):
+        # check if ninstance is provided
+        ninstanc = ninstanc if ninstanc is not None else self.ninstanc
+        # check if ninstance is provided
+        nclasses = nclasses if nclasses is not None else self.nclasses
+        # check if ninstance is provided
+        nfeature = nfeature if nfeature is not None else self.nfeature
+        # check if neg batch is provided
+        instance_x, instance_i = [], []
+        # append information to the placeholders
+        x, y = self.sample_batch(self.X, self.y, ninstanc, nclasses, nfeature)
+        instance_i.append(x.shape + (y.shape[1],) + (-1,))
+        instance_x.append(flatten(x, y))
+        # remove x,y
+        del x, y
+        # stack x values
+        x = np.vstack(instance_x)
+        # stack ninstanc
+        ninstance = np.vstack(instance_i)[:, 0][:, None]
+        # stack nfeatures
+        nfeature = np.vstack(instance_i)[:, 1][:, None]
+        # stack nclasses
+        nclasses = np.vstack(instance_i)[:, 2][:, None]
+        # get task description of surr task
+        return x, ninstance, nfeature, nclasses
         

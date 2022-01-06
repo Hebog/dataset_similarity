@@ -58,7 +58,7 @@ for openml_dataset in suite.data:
         datasetmf.append(model(batch.input).numpy())
 
     metafeatures = np.vstack(datasetmf).mean(axis=0)[None]
-    pd.DataFrame(metafeatures, index=[dataset.name]).to_csv(save_path, mode="a", header=not os.path.exists(save_path))
+    #pd.DataFrame(metafeatures, index=[dataset.name]).to_csv(save_path, mode="a", header=not os.path.exists(save_path))
 
     time2 = time.time()
 
