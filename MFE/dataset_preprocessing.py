@@ -25,13 +25,19 @@ class dataset_OpenML(object):
         return X, y, dataset.name
 
     def impute_missing(self, X, categorical_indicator):
-        object_cols = {col: 'object' for col in np.array(X.columns[categorical_indicator])}
-        X = X.astype(object_cols)
-        dtypes = dict(X.dtypes)
-        numeric_features = list(X.columns[~np.array(categorical_indicator)])
-        numeric_transformer = SimpleImputer(strategy="mean")
-
         categorical_features = list(X.columns[categorical_indicator])
+        numeric_features = list(X.columns[~np.array(categorical_indicator)])
+        X = X.dropna(axis=1, how='all')
+
+        categorical_features = [ft for ft in categorical_features if ft in X.columns]
+        numeric_features = [ft for ft in numeric_features if ft in X.columns]
+
+        object_cols = {col: 'object' for col in categorical_features}
+        X = X.astype(object_cols)
+
+        dtypes = dict(X.dtypes)
+
+        numeric_transformer = SimpleImputer(strategy="mean")
         categorical_transformer = SimpleImputer(strategy="constant", fill_value="missing")
         type_specific_preprocessor = ColumnTransformer(
             transformers=[
@@ -46,4 +52,3 @@ class dataset_OpenML(object):
 
     def get_arrays(self):
         return np.asarray(self.X), np.asarray(self.y)
-

@@ -17,12 +17,20 @@ time0 = time.time()
 
 for openml_id in suite.data:
     print(openml_id)
-    time1 = time.time()
-    name, metafeatures = extract_features_OpenML(openml_id)
-    metafeatures.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
+    if not openml_id == 554:
 
-    time2 = time.time()
+        time1 = time.time()
+        name, metafeatures = extract_features_OpenML(openml_id)
+        metafeatures.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
 
-    print("Successfully finished dataset: " + name + "\nTook: " + str(np.round(time2 - time1, 2)) + " seconds")
+        time2 = time.time()
+
+        with open("time_taken.txt", "a") as file_object:
+            write_str = name + "," + str(np.round(time2 - time1, 2))
+            file_object.write(write_str)
+
+
+
+        print("Successfully finished dataset: " + name + "\nTook: " + str(np.round(time2 - time1, 2)) + " seconds")
 
 print("Successfully finished all datasets, took: " + str(np.round(time2 - time0, 2)) + " seconds")
