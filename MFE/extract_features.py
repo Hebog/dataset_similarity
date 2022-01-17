@@ -12,7 +12,7 @@ def extract_features_OpenML(data_id):
         mfe = MFE()
         mfe.fit(X, y)
         ft = mfe.extract(cat_cols='auto', suppress_warnings=True)
-        return dat.name, pd.DataFrame(data=[ft[1]], index=[dat.name], columns=ft[0])
+        return dat.name, pd.DataFrame(data=[ft[1]], index=[data_id], columns=ft[0])
 
     else:
         print(dat.name + " is too large, MFE will not be computed.")
