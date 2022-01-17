@@ -186,7 +186,7 @@ class Dataset_OpenML(Dataset):
             # Transform labels into categorical encoding
             labels = self.encode_labels(y)
 
-        return data, labels, dataset.name
+        return data, labels, dataset.name, numerical_target
 
     def preprocess_features(self, X, categorical_indicator):
         '''
@@ -281,8 +281,8 @@ class Dataset_OpenML(Dataset):
         data = data[:, nfeature]
         # extract selected labels from the data
         labels = labels[:, nclasses]
-        print("shape data: " + str(data.shape))
-        print("shape labels: " + str(labels.shape))
+        # print("shape data: " + str(data.shape))
+        # print("shape labels: " + str(labels.shape))
         return data, labels
 
     def instances(self, ninstanc=None, nclasses=None, nfeature=None):
