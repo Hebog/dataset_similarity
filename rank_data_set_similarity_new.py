@@ -56,7 +56,11 @@ mf_df.insert(0, "dataset_name", value=dataset.name)
 mf_df = mf_df.loc[openml_dataset]
 
 # Process MFE features
-name, metafeatures_mfe = extract_features_OpenML(openml_dataset)
+try:
+    name, metafeatures_mfe = extract_features_OpenML(openml_dataset)
+
+except:
+    print("MFE features could not be extracted")
 
 mfe_extracted = True if isinstance(metafeatures_mfe, pd.DataFrame) else False
 if mfe_extracted:
@@ -72,8 +76,10 @@ def create_ranking(openml_dataset, extr_mf_path, input_mf):
     else:
         extracted_mf = extracted_mf.append(input_mf)
 
+    to_be_scaled_df = extracted_mf.iloc[:, 1:]
+    to_be_scaled_df = to_be_scaled_df.loc[:, ~np.isinf(to_be_scaled_df).any()]
     min_max_scaler = MinMaxScaler()
-    mf_scaled = min_max_scaler.fit_transform(extracted_mf.iloc[:, 1:])
+    mf_scaled = min_max_scaler.fit_transform(to_be_scaled_df)
     mf_scaled = pd.DataFrame(mf_scaled, index=extracted_mf.index)
     # print("Initial Shape: " + str(mf_scaled.shape))
     na_count_cols = mf_scaled.isna().sum() / len(mf_scaled)
@@ -98,13 +104,21 @@ def create_ranking(openml_dataset, extr_mf_path, input_mf):
     ranking = cos_sim_df.sort_values(by="Cosine Similarity", ascending=False).reset_index(drop=True)
     return ranking
 
+mfe_check = False
+if mfe_extracted:
+    try:
+        ranking = create_ranking(openml_dataset, "extracted_MF/OpenML-CC18_mfe.csv", metafeatures_mfe)
+        mfe_check = True
+    except:
+        print("MFE ranking could not be computed.")
 
-ranking = create_ranking(openml_dataset, "extracted_MF/OpenML-CC18_mfe.csv", metafeatures_mfe)
 ranking2 = create_ranking(openml_dataset, "extracted_MF/OpenML-CC18_d2v.csv", mf_df)
 
-print("Similarity ranking based on MFE metafeatures:")
-print(ranking.head(10))
-print("\n\n")
+if mfe_check:
+    print("Similarity ranking based on MFE metafeatures:")
+    print(ranking.head(10))
+    print("\n\n")
+
 print("Similarity ranking based on D2V metafeatures:")
 print(ranking2.head(10))
 
