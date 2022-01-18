@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 from sklearn.compose import ColumnTransformer
 import openml
+from pandas.api.types import is_numeric_dtype
 
 
 class dataset_OpenML(object):
@@ -20,7 +21,18 @@ class dataset_OpenML(object):
         X, y, categorical_indicator, attribute_names = dataset.get_data(
             dataset_format="dataframe", target=dataset.default_target_attribute
         )
-        X = self.impute_missing(X, categorical_indicator)
+
+        try:
+            X = self.impute_missing(X, categorical_indicator)
+
+        except ValueError as e:
+            if "could not convert string to float" in str(e):
+                print("Categorical indicator error, retrying")
+                categorical_indicator = [not is_numeric_dtype(X[col]) for col in X.columns]
+                X = self.impute_missing(X, categorical_indicator)
+
+            else:
+                raise
 
         return X, y, dataset.name
 
