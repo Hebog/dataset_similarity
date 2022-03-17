@@ -5,7 +5,7 @@ import time
 
 import pandas as pd
 
-from MFE.extract_features import extract_features_OpenML
+from MFE.extract_features import extract_MFE_features_OpenML
 
 
 
@@ -20,7 +20,7 @@ time0 = time.time()
 
 for openml_id in suite.data:
     time1 = time.time()
-    name, metafeatures = extract_features_OpenML(openml_id)
+    name, metafeatures = extract_MFE_features_OpenML(openml_id)
     if isinstance(metafeatures, pd.DataFrame):
         metafeatures.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
 

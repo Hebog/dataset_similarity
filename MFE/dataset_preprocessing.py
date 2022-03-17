@@ -6,7 +6,7 @@ import openml
 from pandas.api.types import is_numeric_dtype
 
 
-class dataset_OpenML(object):
+class dataset_OpenML_MFE(object):
     """
     Create an OpenML specific version of the dataset class.
     """

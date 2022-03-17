@@ -13,7 +13,7 @@ import numpy as np
 import argparse
 import os
 from D2V.sampling import TestSampling, Batch
-from D2V.dummdataset import Dataset_OpenML
+from D2V.dummdataset import Dataset_OpenML_D2V
 # from D2V.modules import FunctionF, FunctionH, FunctionG, PoolF, PoolG
 from D2V.extract_features_model import Dataset2VecModel
 import pandas as pd
@@ -45,7 +45,7 @@ for openml_dataset in suite.data:
     datasetmf = []
 
     batch = Batch(configuration['batch_size'])
-    dataset = Dataset_OpenML(openml_dataset)
+    dataset = Dataset_OpenML_D2V(openml_dataset)
     testsampler = TestSampling(dataset=dataset)
 
     model = Dataset2VecModel(configuration)

@@ -8,11 +8,11 @@ import numpy as np
 import argparse
 import os
 from D2V.sampling import TestSampling, Batch
-from D2V.dummdataset import Dataset_OpenML
+from D2V.dummdataset import Dataset_OpenML_D2V
 # from D2V.modules import FunctionF, FunctionH, FunctionG, PoolF, PoolG
 from D2V.extract_features_model import Dataset2VecModel
 import pandas as pd
-from MFE.extract_features import extract_features_OpenML
+from MFE.extract_features import extract_MFE_features_OpenML
 
 tf.random.set_seed(0)
 np.random.seed(42)
@@ -44,7 +44,7 @@ for openml_dataset in suite.data:
     datasetmf = []
 
     batch = Batch(configuration['batch_size'])
-    dataset = Dataset_OpenML(openml_dataset)
+    dataset = Dataset_OpenML_D2V(openml_dataset)
     testsampler = TestSampling(dataset=dataset)
 
     model = Dataset2VecModel(configuration)
@@ -62,7 +62,7 @@ for openml_dataset in suite.data:
     mf_df.to_csv(save_path_d2v, mode="a", header=not os.path.exists(save_path_d2v))
 
     # Process MFE features
-    name, metafeatures_mfe = extract_features_OpenML(openml_dataset)
+    name, metafeatures_mfe = extract_MFE_features_OpenML(openml_dataset)
     if isinstance(metafeatures_mfe, pd.DataFrame):
         metafeatures_mfe.insert(0, "dataset_name", value=name)
         metafeatures_mfe.to_csv(save_path_mfe, mode="a", header=not os.path.exists(save_path_mfe))

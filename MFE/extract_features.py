@@ -1,10 +1,10 @@
 from pymfe.mfe import MFE
 import pandas as pd
-from MFE.dataset_preprocessing import dataset_OpenML
+from MFE.dataset_preprocessing import dataset_OpenML_MFE
 
 
-def extract_features_OpenML(data_id):
-    dat = dataset_OpenML(data_id)
+def extract_MFE_features_OpenML(data_id):
+    dat = dataset_OpenML_MFE(data_id)
     X, y = dat.get_arrays()
     print(dat.name + " has shape: " + str(X.shape))
 

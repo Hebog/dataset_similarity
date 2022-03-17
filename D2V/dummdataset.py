@@ -155,7 +155,7 @@ class Dataset(object):
         return x,ninstance,nfeature,nclasses
 
 
-class Dataset_OpenML(Dataset):
+class Dataset_OpenML_D2V(Dataset):
     """
     Create an OpenML specific version of the dataset class.
     """
