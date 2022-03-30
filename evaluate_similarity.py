@@ -1,35 +1,24 @@
-import pandas as pd
-import numpy as np
-from tqdm import tqdm
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import OrdinalEncoder
-from sklearn.preprocessing import LabelEncoder
-from sklearn.preprocessing import StandardScaler
-from scipy import stats
-from sklearn.preprocessing import MinMaxScaler
-import os
-import openml
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn import preprocessing
-import time
-import sklearn
-from sklearn.metrics.pairwise import cosine_similarity
-from scipy import stats
-from openml.tasks import TaskType
 import importlib
-import ast
-from sklearn.pipeline import make_pipeline
+import os
 import warnings
-from sklearn.dummy import DummyClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.model_selection import KFold
-from sklearn.metrics import accuracy_score
+
+import numpy as np
+import openml
+import pandas as pd
+import sklearn
+from openml.tasks import TaskType
 from pandas.api.types import is_numeric_dtype
-from rank_data_set_similarity_new import process_mfe
-from rank_data_set_similarity_new import process_d2v
-from rank_data_set_similarity_new import create_ranking
+from sklearn.compose import ColumnTransformer
+from sklearn.dummy import DummyClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OrdinalEncoder, StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+from tqdm import tqdm
+
+from rank_data_set_similarity import create_ranking, process_d2v, process_mfe
 
 
 def get_task_df(did, task_type="S_Classification"):
@@ -72,8 +61,6 @@ def get_second_best_run(did):
 
 
 def get_evaluations(task_ids):
-    #     # Listing all evaluations made on the 11 tasks collected above
-    # # with evaluation metric as 'predictive_accuracy'
     eval_df = openml.evaluations.list_evaluations(function='predictive_accuracy', tasks=task_ids,
                                                   output_format='dataframe', sort_order="desc")
     eval_df_filtered = eval_df[eval_df['flow_name'].str.contains("sklearn")]
@@ -315,7 +302,7 @@ def evaluate_ranking(did):
 
 
 def main():
-    save_path = "similarity_evaluation.csv"
+    save_path = "similarity_evaluation/similarity_evaluation.csv"
 
     for data_id in tqdm(openml.study.get_suite(99).data[24:]):
         print("starting: " + str(data_id))
