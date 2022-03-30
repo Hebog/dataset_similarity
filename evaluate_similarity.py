@@ -67,7 +67,7 @@ def get_second_best_run(did):
     for i in range(len(evaluation_df_freq_id)):
         best_run_id = evaluation_df_freq_id.loc[i, 'run_id']
         best_run = openml.runs.get_run(best_run_id)
-        if not 'KerasClassifier' in best_run.flow_name:
+        if ('KerasClassifier' not in best_run.flow_name) and ('sklearn_extra' not in best_run.flow_name):
             return best_run
 
 
@@ -97,6 +97,9 @@ def get_classifier_run(did):
     run = get_best_run(did)
     if "KerasClassifier" in run.flow_name:
         print("Getting worse run because of keras classifier")
+        run = get_second_best_run(did)
+    if "sklearn_extra" in run.flow_name:
+        print("Getting worse run because of sklearn_extra classifier")
         run = get_second_best_run(did)
 
     exceptions = {'SVC': 'sklearn.svm', 'AdaBoostClassifier': 'sklearn.ensemble',
@@ -224,7 +227,6 @@ def preprocess_features(X, categorical_indicator):
 def get_most_similar_did(did, ranking_type):
     if ranking_type == "MFE":
         metafeatures_mfe, mfe_extracted = process_mfe(did)
-
         mfe_check = False
         if mfe_extracted:
             try:
@@ -236,6 +238,9 @@ def get_most_similar_did(did, ranking_type):
                 print("MFE ranking could not be computed.")
 
                 return None, mfe_check
+
+        else:
+            return None, mfe_check
 
     if ranking_type == "D2V":
         metafeatures_d2v = process_d2v(did, split=0)
@@ -312,7 +317,7 @@ def evaluate_ranking(did):
 def main():
     save_path = "similarity_evaluation.csv"
 
-    for data_id in tqdm(openml.study.get_suite(99).data):
+    for data_id in tqdm(openml.study.get_suite(99).data[24:]):
         print("starting: " + str(data_id))
         if not data_id in []:
             evaluated_ranking = evaluate_ranking(data_id)
