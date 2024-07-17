@@ -18,7 +18,7 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OrdinalEncoder, St
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
 
-from rank_data_set_similarity import create_ranking, process_d2v, process_mfe
+from rank_data_set_similarity import create_ranking#, process_d2v, process_mfe
 
 
 def get_task_df(did, task_type="S_Classification"):
@@ -213,11 +213,13 @@ def preprocess_features(X, categorical_indicator):
 
 def get_most_similar_did(did, ranking_type):
     if ranking_type == "MFE":
-        metafeatures_mfe, mfe_extracted = process_mfe(did)
+        # metafeatures_mfe, mfe_extracted = process_mfe(did)
+        metafeatures_mfe = None
+        mfe_extracted = True
         mfe_check = False
         if mfe_extracted:
             try:
-                ranking = create_ranking(did, "extracted_MF/OpenML-CC18_mfe.csv", metafeatures_mfe)
+                ranking = create_ranking(did, "dataset_similarity/extracted_MF/OpenML-CC18_mfe.csv", metafeatures_mfe)
                 mfe_check = True
 
                 return ranking.loc[0, 'did'], mfe_check
@@ -229,9 +231,29 @@ def get_most_similar_did(did, ranking_type):
         else:
             return None, mfe_check
 
+    if ranking_type == "PFN":
+        # metafeatures_pfn, pfn_extracted = process_pfn(did)
+        metafeatures_pfn = None
+        pfn_check = False
+        pfn_extracted =True
+        if pfn_extracted:
+            try:
+                ranking = create_ranking(did, "dataset_similarity/extracted_MF/OpenML-CC18_pfn.csv", metafeatures_pfn)
+                pfn_check = True
+
+                return ranking.loc[0, 'did'], pfn_check
+            except:
+                print("PFN ranking could not be computed.")
+
+                return None, pfn_check
+
+        else:
+            return None, pfn_check
+    
     if ranking_type == "D2V":
-        metafeatures_d2v = process_d2v(did, split=0)
-        ranking = create_ranking(did, "extracted_MF/OpenML-CC18_d2v.csv", metafeatures_d2v)
+        # metafeatures_d2v = process_d2v(did, split=0)
+        metafeatures_d2v = None
+        ranking = create_ranking(did, "dataset_similarity/extracted_MF/OpenML-CC18_d2v.csv", metafeatures_d2v)
         return ranking.loc[0, 'did']
 
 
@@ -250,11 +272,17 @@ def evaluate_ranking(did):
     if mfe_success:
         print("mfe most similar did: " + str(did_most_similar_mfe))
 
+    did_most_similar_pfn, pfn_success = get_most_similar_did(did, "PFN")
+
+    if pfn_success:
+        print("pfn most similar did: " + str(did_most_similar_pfn))
+
     dc_lst = []
     dt_lst = []
     bc_d2v_lst = []
     bc_mfe_lst = []
-
+    bc_pfn_lst = []
+    
     kf = KFold(n_splits=5, shuffle=True)
     for train, test in kf.split(X):
         X_train, y_train = X.iloc[train], y[train]
@@ -297,23 +325,32 @@ def evaluate_ranking(did):
 
         else:
             bc_mfe_lst.append(np.nan)
+            
+        # PFN most similar best classifier
+        bc_pfn = get_classifier_run(did_most_similar_pfn)
+        bc_pfn.fit(X_train, y_train)
+        bc_pfn_lst.append(accuracy_score(y_test, bc_pfn.predict(X_test)))
+        
 
-    return (dataset.name, np.mean(dc_lst), np.mean(dt_lst), np.mean(bc_d2v_lst), np.mean(bc_mfe_lst))
+    return (dataset.name, np.mean(dc_lst), np.mean(dt_lst), np.mean(bc_d2v_lst), np.mean(bc_mfe_lst), np.mean(bc_pfn_lst))
 
 
 def main():
-    save_path = "similarity_evaluation/similarity_evaluation.csv"
+    save_path = "dataset_similarity/similarity_evaluation/similarity_evaluation_pfn.csv"
 
-    for data_id in tqdm(openml.study.get_suite(99).data[24:]):
+    for data_id in tqdm((28, 29, 31, 32, 37, 44, 46, 50, 54, 151, 182, 188, 38, 458, 469, 1049, 1050, 1053, 1063, 1067, 1068, 1590, 1510, 1489, 1494, 1497, 1480, 1487, 1475, 1462, 1464, 4534, 6332, 1461, 4538, 23381, 40668, 40966, 40982, 40994, 40983, )):#openml.study.get_suite(99).data[24:]):
         print("starting: " + str(data_id))
-        if not data_id in []:
-            evaluated_ranking = evaluate_ranking(data_id)
-            evaluated_df = pd.DataFrame({"data_id": [data_id], 'name': [evaluated_ranking[0]],
-                                         'dummy_clf': [evaluated_ranking[1]], 'dt_clf': [evaluated_ranking[2]],
-                                         'd2v_clf': [evaluated_ranking[3]], "mfe_clf": [evaluated_ranking[4]]})
-            evaluated_df.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
-            print("processed: " + str(data_id))
-
+        try:
+            if not data_id in []:
+                evaluated_ranking = evaluate_ranking(data_id)
+                evaluated_df = pd.DataFrame({"data_id": [data_id], 'name': [evaluated_ranking[0]],
+                                            'dummy_clf': [evaluated_ranking[1]], 'dt_clf': [evaluated_ranking[2]],
+                                            'd2v_clf': [evaluated_ranking[3]], "mfe_clf": [evaluated_ranking[4]],
+                                            "pfn_clf": [evaluated_ranking[5]]})
+                evaluated_df.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
+                print("processed: " + str(data_id))
+        except Exception as e :
+            print(e)
 
 if __name__ == "__main__":
     main()
