@@ -7,10 +7,10 @@ import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.preprocessing import MinMaxScaler
 
-from D2V.dummdataset import Dataset_OpenML_D2V
-from D2V.extract_features_model import Dataset2VecModel
-from D2V.sampling import TestSampling, Batch
-from MFE.extract_features import extract_MFE_features_OpenML
+# from D2V.dummdataset import Dataset_OpenML_D2V
+# from D2V.extract_features_model import Dataset2VecModel
+# from D2V.sampling import TestSampling, Batch
+# from MFE.extract_features import extract_MFE_features_OpenML
 
 
 # Extract Metafeatures for input dataset
@@ -65,12 +65,14 @@ def process_mfe(openml_did):
         return None, mfe_extracted
 
 
-def create_ranking(openml_dataset, extr_mf_path, input_mf):
+def create_ranking(openml_dataset, extr_mf_path, input_mf=None):
     extracted_mf = pd.read_csv(extr_mf_path, index_col=0)
     if openml_dataset in extracted_mf.index:
         print("Input index already in features")
 
     else:
+        assert input_mf is not None, "No input index in features and not MF input"
+            
         extracted_mf = extracted_mf.append(input_mf)
 
     # Checking whether any value if infity, if so, removing it
