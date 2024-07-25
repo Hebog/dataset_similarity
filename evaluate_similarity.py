@@ -18,6 +18,13 @@ from sklearn.preprocessing import LabelEncoder, MinMaxScaler, OrdinalEncoder, St
 from sklearn.tree import DecisionTreeClassifier
 from tqdm import tqdm
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.linear_model import RidgeClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.naive_bayes import GaussianNB
+
+
 from rank_data_set_similarity import create_ranking#, process_d2v, process_mfe
 
 
@@ -334,6 +341,46 @@ def evaluate_ranking(did):
 
     return (dataset.name, np.mean(dc_lst), np.mean(dt_lst), np.mean(bc_d2v_lst), np.mean(bc_mfe_lst), np.mean(bc_pfn_lst))
 
+def eval_portfolio(did):
+    dataset = openml.datasets.get_dataset(did)
+    X, y, categorical_indicator, attribute_names = dataset.get_data(
+        dataset_format="dataframe", target=dataset.default_target_attribute
+    )
+
+    numerical_target = is_numeric_dtype(y)
+    portfolio = [KNeighborsClassifier, RidgeClassifier, SVC, DecisionTreeClassifier, GaussianNB,]
+    accuracies = {algo.__name__: [] for algo in portfolio}
+    for algo in portfolio:
+        kf = KFold(n_splits=5, shuffle=True)
+        for train, test in kf.split(X):
+            X_train, y_train = X.iloc[train], y[train]
+            X_test, y_test = X.iloc[test], y[test]
+
+            X_train = preprocess_features(X_train, categorical_indicator)
+            X_test = preprocess_features(X_test, categorical_indicator)
+
+            if numerical_target:
+                # Scale labels to range from [0,1]
+                y_train = scale_labels(y_train)
+                y_test = scale_labels(y_test)
+
+            else:
+                # Transform labels into categorical encoding
+                y_train = encode_labels(y_train)
+                y_test = encode_labels(y_test)
+
+            # y = np.asarray(y)
+
+            cl = algo()
+            cl.fit(X_train, y_train)
+
+            accuracies[algo.__name__].append(accuracy_score(y_test, cl.predict(X_test)))
+    
+    accuracies = {k: [np.mean(v)] for k,v in accuracies.items()}
+    accuracies['name'] = dataset.name
+    accuracies["data_id"] = did
+    return accuracies
+
 
 def main():
     save_path = "dataset_similarity/similarity_evaluation/similarity_evaluation_pfn.csv"
@@ -352,5 +399,50 @@ def main():
         except Exception as e :
             print(e)
 
+from multiprocessing import Manager
+from multiprocessing import Pool  
+
+def worker(data_id, extracted_mf, res):
+        if data_id in extracted_mf.index:
+            print("Input index already in features")
+        else:
+            try:
+                if not data_id in []:
+                    print("start: " + str(data_id))
+                    evaluated_portfolio = eval_portfolio(data_id)
+                    evaluated_df = pd.DataFrame(evaluated_portfolio)
+                    print("processed: " + str(data_id))
+                    res.append(evaluated_df)
+            except Exception as e :
+                print(e)
+
+
+DIDS = (3,11, 14, 15, 16, 18, 22, 28, 29, 31, 32, 37, 44, 46, 50, 54, 151, 182, 188, 38, 458, 469, 1049, 1050, 1053, 1063, 1067, 1068, 1590, 1510, 1489, 1494, 1497, 1480, 1487, 1475, 1462, 1464, 4534, 6332, 1461, 4538, 23381,40668, 40966, 40982, 40994, 40983, )#
+# DIDS = (3,11, 14, 15, )
+
+def main1():
+    save_path = "dataset_similarity/similarity_evaluation/similarity_evaluation_portfolio1.csv"
+    pool_parameter = DIDS # list of objects to process
+    try:
+        extracted_mf = pd.read_csv(save_path, index_col="data_id")
+    except FileNotFoundError:
+        extracted_mf = pd.DataFrame()
+    with Manager() as mgr:
+        res = mgr.list([])
+        params = []
+        # build list of parameters to send to starmap
+        for param in pool_parameter:
+            params.append([param,extracted_mf, res])
+
+        with Pool() as p:
+            p.starmap(worker, tqdm(params, total=len(pool_parameter)) )
+        print(res)
+        
+
+        print(res)
+        evaluated_df = pd.concat(res)
+        evaluated_df.to_csv(save_path, mode="a", header=not os.path.exists(save_path))
+
+
 if __name__ == "__main__":
-    main()
+    main1()

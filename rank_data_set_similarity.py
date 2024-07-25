@@ -71,7 +71,7 @@ def create_ranking(openml_dataset, extr_mf_path, input_mf=None):
         print("Input index already in features")
 
     else:
-        assert input_mf is not None, "No input index in features and not MF input"
+        assert input_mf is not None, f"No input index {openml_dataset} in features and not MF input"
             
         extracted_mf = extracted_mf.append(input_mf)
 
